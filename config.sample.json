@@ -1,0 +1,38 @@
+{
+  "emails": [
+    {
+      "address": "your.email@gmail.com",
+      "password": "your-app-password",
+      "imap_server": "imap.gmail.com"
+    },
+    {
+      "address": "second.email@gmail.com",
+      "password": "second-app-password",
+      "imap_server": "imap.gmail.com"
+    }
+  ],
+  "claude": {
+    "api_key": "your-claude-api-key",
+    "model": "claude-3-opus-20240229",
+    "filter_model": "claude-3-haiku-20240307"
+  },
+  "elevenlabs": {
+    "api_key": "your-elevenlabs-api-key",
+    "voice_id": null
+  },
+  "storage": {
+    "type": "local",
+    "upload_dir": "uploads"
+  },
+  "google_drive": {
+    "enabled": true,
+    "credentials_path": "path/to/oauth_credentials.json",
+    "folder_id": "your-drive-folder-id"
+  },
+  "personalization": {
+    "user_name": "Aaron",
+    "user_role": "AI engineer at Anthropic",
+    "interests": ["AI/ML", "LLMs", "tech industry news", "programming", "startups"],
+    "filter_mode": "smart"
+  }
+}
