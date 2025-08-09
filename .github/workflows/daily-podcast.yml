@@ -32,13 +32,15 @@ jobs:
         run: |
           echo '${{ secrets.PODCAST_CONFIG_JSON }}' > config.json
       
-      - name: Create Google Drive credentials
+      - name: Create Google Drive credentials and token
         run: |
           echo '${{ secrets.GDRIVE_CREDENTIALS_JSON }}' > gdrive_credentials.json
+          mkdir -p ~/.newsletter_podcast
+          echo '${{ secrets.GDRIVE_TOKEN_JSON }}' > ~/.newsletter_podcast/gdrive_token.json
       
       - name: Generate podcast
         run: |
-          python main.py --config config.json --quick
+          python main.py --config config.json
         continue-on-error: true  # Don't fail the workflow if generation has issues
         timeout-minutes: 20
       

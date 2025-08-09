@@ -16,7 +16,7 @@ git push -u origin main
 ### Step 2: Add GitHub Secrets
 Go to your repository → Settings → Secrets and variables → Actions → New repository secret
 
-Add these 2 secrets:
+Add these 3 secrets:
 
 #### 1. `PODCAST_CONFIG_JSON`
 Copy your entire `config.json` content as a single secret. This makes it easy to:
@@ -24,6 +24,8 @@ Copy your entire `config.json` content as a single secret. This makes it easy to
 - Update API keys
 - Change personalization settings
 - Modify any configuration
+
+**Important:** Set the Google Drive credentials path to `"gdrive_credentials.json"` (not a full path) so GitHub Actions can find it.
 
 Example:
 ```json
@@ -68,7 +70,22 @@ Example:
 ```
 
 #### 2. `GDRIVE_CREDENTIALS_JSON`
-Copy the entire content of your Google OAuth credentials JSON file.
+Copy the entire content of your Google OAuth credentials JSON file (the one you downloaded from Google Cloud Console).
+
+#### 3. `GDRIVE_TOKEN_JSON` (Required for Google Drive uploads)
+**This is the authentication token that allows GitHub Actions to upload without browser login.**
+
+To get this token:
+1. **Run the script locally first** to trigger Google authentication
+   ```bash
+   python main.py --config config.json
+   ```
+2. Complete the browser authentication when prompted
+3. Find the saved token file at `~/.newsletter_podcast/gdrive_token.json`
+4. Copy the entire content of this token file
+5. Add it as the `GDRIVE_TOKEN_JSON` secret
+
+**Note:** This token may expire after several months. If Google Drive uploads start failing, regenerate the token locally and update this secret.
 
 ### Step 3: Test the workflow
 1. Go to your repository → Actions → "Daily Newsletter Podcast Generation"
@@ -142,19 +159,42 @@ You can download these from the Actions run page.
    - Verify email account credentials are correct
    - Ensure IMAP is enabled in Gmail
 
-2. **Google Drive upload failed**
-   - Token may have expired - update `GDRIVE_CREDENTIALS_JSON`
-   - Check folder ID is correct
-   - Verify Drive API is enabled in Google Cloud
+2. **Google Drive upload failed - Authentication Issues**
+   - **Most common issue**: Missing or expired `GDRIVE_TOKEN_JSON`
+   - **Solution**: 
+     1. Run the script locally to generate a new token
+     2. Update the `GDRIVE_TOKEN_JSON` secret with the new token
+   - **Prevention**: Tokens typically last several months but will eventually expire
+   - **Alternative**: Set `"enabled": false` in google_drive config to skip Drive uploads
 
-3. **Workflow timeout**
+3. **Google Drive upload failed - Other Issues**
+   - Check folder ID is correct (get from Drive URL)
+   - Verify Drive API is enabled in Google Cloud Console
+   - Ensure credentials path is set to `"gdrive_credentials.json"` in config
+
+4. **Workflow timeout**
    - Default timeout is 30 minutes
    - Quick mode (`--quick`) should complete in 5-10 minutes
    - Check if email fetching is hanging
 
-4. **API rate limits**
+5. **API rate limits**
    - The workflow runs once per day by default
    - Consider using different API keys for manual testing
+
+### Google Drive Authentication in GitHub Actions
+
+**Why browser authentication doesn't work**: GitHub Actions runs in a headless environment without a browser, so the normal OAuth flow that opens a browser window will fail.
+
+**Solution**: We use a pre-generated authentication token:
+1. Authenticate locally on your computer (with browser access)
+2. Save the resulting token as a GitHub secret
+3. GitHub Actions uses this token to authenticate without needing a browser
+
+**When to regenerate the token**:
+- If you see "Token has expired" errors
+- If Google Drive uploads suddenly stop working
+- After changing Google account passwords
+- Approximately every 6-12 months as a precaution
 
 ## 🎉 Benefits
 
