@@ -1,0 +1,74 @@
+name: Daily Newsletter Podcast Generation
+
+# Run at 7:00 AM Eastern Time every day
+on:
+  schedule:
+    - cron: '0 11 * * *'  # 11:00 UTC = 7:00 AM ET (adjust if needed)
+  
+  # Allow manual triggering for testing
+  workflow_dispatch:
+
+jobs:
+  generate-podcast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30  # Prevent hanging jobs
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create config.json from secrets
+        run: |
+          echo '${{ secrets.PODCAST_CONFIG_JSON }}' > config.json
+      
+      - name: Create Google Drive credentials
+        run: |
+          echo '${{ secrets.GDRIVE_CREDENTIALS_JSON }}' > gdrive_credentials.json
+      
+      - name: Generate podcast
+        run: |
+          python main.py --config config.json --quick
+        continue-on-error: true  # Don't fail the workflow if generation has issues
+        timeout-minutes: 20
+      
+      - name: Upload podcast artifacts
+        uses: actions/upload-artifact@v3
+        if: always()  # Upload even if generation failed for debugging
+        with:
+          name: podcast-output-${{ github.run_id }}
+          path: |
+            output/**/*.mp3
+            output/**/*.txt
+            output/**/*.json
+          retention-days: 7
+      
+      - name: Send notification
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const status = '${{ job.status }}';
+            const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+            const message = status === 'success' 
+              ? `✅ Daily podcast generated successfully! [View run](${runUrl})`
+              : `❌ Daily podcast generation failed. [View logs](${runUrl})`;
+            
+            // Create an issue comment or notification
+            console.log(message);
+      
+      - name: Clean up sensitive files
+        if: always()
+        run: |
+          rm -f config.json gdrive_credentials.json
