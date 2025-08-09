@@ -15,7 +15,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -43,7 +43,7 @@ jobs:
         timeout-minutes: 20
       
       - name: Upload podcast artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()  # Upload even if generation failed for debugging
         with:
           name: podcast-output-${{ github.run_id }}
