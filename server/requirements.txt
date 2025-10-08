@@ -1,0 +1,18 @@
+# FastAPI and server dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pydantic[email]==2.5.0
+
+# Supabase authentication
+supabase==2.0.3
+
+# Scheduling
+APScheduler==3.10.4
+
+# Async support
+aiofiles==23.2.1
+
+# Existing Newspod dependencies (from main project)
+# Add any additional dependencies that your existing podcast_generator needs
+# You may need to install these in your main project as well
